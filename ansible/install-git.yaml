@@ -1,0 +1,13 @@
+- name: Install GIT
+  hosts:
+    - aws
+  tasks:
+    - name: install git
+      yum: name=git state=latest
+      become: yes
+      become_method: sudo
+
+    - name: git clone
+      git: repo=https://github.com/deromka/spring-petclinic.git dest=~/spring-petclinic clone=yes update=yes
+  tags:
+    - git
