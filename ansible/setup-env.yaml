@@ -5,11 +5,12 @@
     maven_version: 3.3.9
     maven_file_name: "apache-maven-{{ maven_version }}"
     maven_dest_dir: "/usr/local"
-    tmp_dir: "{{ ansible_ssh_user }}/tmp"
+    tmp_dir: "/tmp"
   tasks:
 
     - name: create tmp dir
       file: path={{ tmp_dir }} state=directory mode=0755
+      become: yes
 
     - name: create mvn dest dir
       file: path={{ maven_dest_dir }} state=directory mode=0755
@@ -23,6 +24,7 @@
       # ansible > 2
       # get_url: url=http://apache.mivzakim.net/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz dest=~/maven/ checksum=md5:516923b3955b6035ba6b0a5b031fbd8b
       get_url: url=http://apache.mivzakim.net/maven/maven-3/{{ maven_version }}/binaries/{{ maven_file_name }}-bin.tar.gz dest={{ tmp_dir }}
+      become: yes
 
     - name: extract maven
       unarchive: copy=no src={{ tmp_dir }}/{{ maven_file_name }}-bin.tar.gz dest={{ maven_dest_dir }} mode=0755
@@ -31,6 +33,10 @@
     - name: symlink maven
       file: src={{ maven_dest_dir }}/{{ maven_file_name }} dest={{ maven_dest_dir }}/maven state=link
       become: yes
+
+    - name: set env m2_home
+      lineinfile: dest=~/.bash_profile regexp="^M2_HOME.*" line="M2_HOME={{ maven_dest_dir }}/maven" insertbefore="^PATH="
+
 
   tags:
     - setup
